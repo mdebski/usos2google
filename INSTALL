@@ -1,0 +1,12 @@
+No installation required.
+
+Dependencies:
+ python >= 2.6
+ gdata
+ elementtree
+ pytz
+
+Oauth2 lib is included, as one from pip does not work with usosapi.
+
+You may install needed python modules with:
+$ pip install gdata elementtree pytz

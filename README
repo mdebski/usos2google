@@ -1,0 +1,17 @@
+UsosAPI uses oauth authorization. To allow usos2google to read you schedule,
+you need to:
+
+1. Enter site https://usosapps.uw.edu.pl/developers/ or similar for your
+   UsosAPI instance.
+2. Enter:
+    Application Name = USOS2google
+    Application's Webpage = https://github.com/mdebski/usos2google
+   and your email.
+3. Click 'Submit' and copy Consumer key and Consumer secret to
+   corresponding variables in usos2google_conf.py file.
+4. Run usos2google, enter site you will be asked to and copy PIN from it.
+5. To avoid repeating 4. point every time you run usos2google, you may copy
+   Access Token Key i Access Token Secret to usos2google_conf.py
+
+Google authorization is performed simply with your password - you will be asked
+for it every time.
