@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
 import sys
@@ -22,6 +22,7 @@ except ImportError:
 
 parser=argparse.ArgumentParser(description="""Simple program using USOS API and Google Calendar Data API to copy your sked to google. For usage, see README""")
 parser.add_argument('-s', '--short', action="store_true", default=False, help='Shorten some predefined names')
+parser.add_argument('-i', '--ignore', action="store_true", default=False, help='Ignore some courses, as deifned in config')
 parser.add_argument('-u', '--user', help='Your google account name')
 parser.add_argument('-p', '--password', help="Your google account password")
 args=parser.parse_args()
@@ -69,9 +70,9 @@ else:
   return oauth2.Token(arr['oauth_token'], arr['oauth_token_secret'])
  request_token = _read_token(content)
  # Step 2. Obtain authorization
- print "Go to the following link in your browser:"
- print "%s?oauth_token=%s" % (authorize_url, request_token.key)
- print
+ print("Go to the following link in your browser:")
+ print("%s?oauth_token=%s" % (authorize_url, request_token.key))
+ print("")
  oauth_verifier = raw_input('What is the PIN code? ')
  # Step 3. Access Token
  request_token.set_verifier(oauth_verifier)
@@ -80,13 +81,13 @@ else:
  try:
   access_token = _read_token(content)
  except KeyError:
-  print "Cound not retrieve Access Token (invalid PIN?)."
+  print("Cound not retrieve Access Token (invalid PIN?).")
   sys.exit(1)
- print
- print "You may want to hardcode these values, so you won't need to reauthorize:"
- print "access_token_key = '%s'" % access_token.key
- print "access_token_secret = '%s'" % access_token.secret
- print
+ print("")
+ print("You may want to hardcode these values, so you won't need to reauthorize:")
+ print("access_token_key = '%s'" % access_token.key)
+ print("access_token_secret = '%s'" % access_token.secret)
+ print("")
 
 usosc = oauth2.Client(consumer, access_token)
 
@@ -107,19 +108,21 @@ except gdata.client.Error:
 # Google calendar query and (selection or creation)
 
 feed = googlec.GetOwnCalendarsFeed()
-print "Select calendar to copy sked to:"
+print("Select calendar to copy sked to:")
 cals=[]
 alink=None
 for i, cal in enumerate(feed.entry):
- print ' %s. %s' % (i, cal.title.text)
+ print(' %s. %s' % (i, cal.title.text))
  cals+=[cal]
 i=int(i)+1
-print " %d. Create new calendar" % i
-num=raw_input("Enter number [%d]: " % i)
-if(num==""):
- num=i
-else:
- num=int(num)
+print(" %d. Create new calendar" % i)
+num=None
+while not (isinstance(num, int) and num >= 0 and num <= i):
+ num=raw_input("Enter number [%d]: " % i)
+ try:
+  num = int(num)
+ except ValueError:
+  if(num==""): num = i
 if(num==i):
  name=raw_input("Enter name for the new calendar: ")
  calendar = gdata.calendar.data.CalendarEntry()
@@ -130,8 +133,8 @@ if(num==i):
  try:
   calendar=googlec.InsertCalendar(new_calendar=calendar)
  except gdata.client.RequestError as e:
-  print "Error while creating calendar:"
-  print e
+  print("Error while creating calendar:")
+  print(e)
   sys.exit(1)
  alink=calendar.GetAlternateLink()
 else:
@@ -139,7 +142,14 @@ else:
 
 # Event retrieval and creation, week by week
 
-total=int(raw_input("Number of weeks to copy (starting from last monday): "))
+total = None
+while(total is None):
+ read = raw_input("Number of weeks to copy (starting from last monday) [15]: ")
+ try:
+  total = int(read)
+ except ValueError:
+  total = None
+ if read == "": total = 15
 
 day=datetime.date.today()
 while day.isoweekday()>1:
@@ -151,17 +161,18 @@ def u2gt(s):
  t=mytz.localize(datetime.datetime.strptime(s, "%Y-%m-%d %H:%M:%S"))
  return (t-t.utcoffset()).strftime('%Y-%m-%dT%H:%M:%S.000Z')
 
-print "Copying events, this may take a while."
+print("Copying events, this may take a while.")
 
 for i in xrange(total):
  sys.stdout.write("%d. week: " % (i+1))
  resp, content = usosc.request(usosapi_base_url + "services/tt/student?start=%s&days=7&fields=name|start_time|end_time|classtype_name|classtype_id|course_name|course_id|building_id|building_name|room_number|classgroup_profile_url" % day.isoformat()  ,"GET")
  if resp['status'] != '200':
-  raise Exception("USOS Invalid response %s.\n%s" % (resp['status'], content))
+  raise ValueError("USOS Invalid response %s.\n%s" % (resp['status'], content))
  items = json.loads(content)
  for i in items:
   event = gdata.calendar.data.CalendarEventEntry()
   if(i['course_id'] in ignore_list): continue
+  if((i['course_id'], i['classtype_id']) in ignore_list): continue
   if(args.short):
    event.title = atom.data.Title(text="%s: %s     %s" % (types_short(i), names_short(i), i['room_number']))
   else:

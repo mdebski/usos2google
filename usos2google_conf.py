@@ -22,5 +22,7 @@ names_dict = {
 
 # These courses won't be copied.
 ignore_list = [
-# "1000-214bWWW",
+# "1000-214bWWW",		# whole course
+# ("1000-211bWPF", "LAB"),	# just labs
+# second argument may be also "WYK" - lecture or "CW" - classes
 ]
