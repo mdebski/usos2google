@@ -22,7 +22,7 @@ except ImportError:
 
 parser=argparse.ArgumentParser(description="""Simple program using USOS API and Google Calendar Data API to copy your sked to google. For usage, see README""")
 parser.add_argument('-s', '--short', action="store_true", default=False, help='Shorten some predefined names')
-parser.add_argument('-i', '--ignore', action="store_true", default=False, help='Ignore some courses, as deifned in config')
+parser.add_argument('-i', '--ignore', action="store_true", default=False, help='Ignore some courses, as defined in config')
 parser.add_argument('-u', '--user', help='Your google account name')
 parser.add_argument('-p', '--password', help="Your google account password")
 args=parser.parse_args()
